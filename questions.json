@@ -94,5 +94,11 @@
     "options": ["Central Processing Unit", "Good Processing Unit", "Graph Processing Unit", "Graphics Processing Unit"],
     "correct": 3,
     "category": "Hardware"
+  },
+  {
+    "question": "Welche Prozessorarchitektur wird am häufigsten in mobilen Geräten verwendet?",
+    "options": ["ARM64", "generic 64-Bit", "x86", "AMR64"],
+    "correct": 0,
+    "category": "Hardware"
   }
 ]
