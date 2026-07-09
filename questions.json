@@ -100,5 +100,11 @@
     "options": ["ARM64", "generic 64-Bit", "x86", "AMR64"],
     "correct": 0,
     "category": "Hardware"
+  },
+  {
+    "question": "Wofür steht die Abkürzung SDRAM?",
+    "options": ["Super Dynamic Random Access Memory", "Synchronous Dynamic Random Access Memory", "Small Diameter Random Access Memory", "Small Data Random Access Memory"],
+    "correct": 1,
+    "category": "Hardware"
   }
 ]
