@@ -103,5 +103,11 @@
     "correct": 1,
     "category": "Netzwerk",
     "difficulty": "Mittel"
+  },
+  {
+    "question": "Wofür steht die Abkürzung GPU?",
+    "options": ["Central Processing Unit", "Good Processing Unit", "Graph Processing Unit", "Graphics Processing Unit"],
+    "correct": 3,
+    "category": "Hardware"
   }
 ]
