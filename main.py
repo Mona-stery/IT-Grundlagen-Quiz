@@ -43,6 +43,20 @@ DIFFICULTY_COLORS = {
 }
 DIFFICULTY_LEVELS = ["Leicht", "Mittel", "Schwer"]
 
+# ── Quiz modes ───────────────────────────────────────────────────────────────
+MODE_STANDARD  = "Standard"
+MODE_LEARN     = "Lernmodus"
+MODE_EXAM      = "Prüfungsmodus"
+MODE_TIMED     = "Zeitlimit"
+QUIZ_MODES = [MODE_STANDARD, MODE_LEARN, MODE_EXAM, MODE_TIMED]
+MODE_DESCRIPTIONS = {
+    MODE_STANDARD: "Klassisches Quiz mit sofortigem Feedback.",
+    MODE_LEARN:    "Erklärung nach jeder Frage, warum die Antwort richtig ist.",
+    MODE_EXAM:     "Kein Feedback – Auswertung erst am Ende.",
+    MODE_TIMED:    "Countdown pro Frage – antworte bevor die Zeit abläuft!",
+}
+DEFAULT_TIMER_SECONDS = 30
+
 # ── Appearance ───────────────────────────────────────────────────────────────
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -131,6 +145,11 @@ class QuizApp(ctk.CTk):
         self.selected_answer: int | None = None
         self.answered: bool = False
         self.option_buttons: list[ctk.CTkButton] = []
+        self.quiz_mode: str = MODE_STANDARD
+        self.timer_seconds: int = DEFAULT_TIMER_SECONDS
+        self.timer_remaining: int = 0
+        self.timer_id: str | None = None
+        self.exam_answers: list[int | None] = []
 
         # ── Container that holds all "pages" ─────────────────────────────
         self.container = ctk.CTkFrame(self, fg_color="transparent")
@@ -365,6 +384,65 @@ class QuizApp(ctk.CTk):
         )
         seg_btn.pack(anchor="w")
 
+        # ── Quiz mode ────────────────────────────────────────────────────
+        mode_card = Card(scroll)
+        mode_card.pack(fill="x", pady=10)
+        mode_inner = ctk.CTkFrame(mode_card, fg_color="transparent")
+        mode_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            mode_inner, text="🎮  Quiz-Modus",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 4))
+        ctk.CTkLabel(
+            mode_inner, text="Wähle einen Spielmodus.",
+            font=ctk.CTkFont(size=13),
+            text_color=TEXT_MUTED,
+        ).pack(anchor="w", pady=(0, 12))
+
+        self.mode_var = ctk.StringVar(value=MODE_STANDARD)
+        self.mode_desc_label = ctk.CTkLabel(
+            mode_inner, text=MODE_DESCRIPTIONS[MODE_STANDARD],
+            font=ctk.CTkFont(size=12, slant="italic"),
+            text_color=TEXT_MUTED,
+            wraplength=500,
+        )
+
+        for mode in QUIZ_MODES:
+            ctk.CTkRadioButton(
+                mode_inner, text=mode, variable=self.mode_var,
+                value=mode, font=ctk.CTkFont(size=14),
+                fg_color=ACCENT, hover_color=ACCENT_HOVER,
+                border_color=BORDER, text_color=TEXT_PRIMARY,
+                command=self._update_mode_description,
+            ).pack(anchor="w", pady=3)
+
+        self.mode_desc_label.pack(anchor="w", pady=(8, 0))
+
+        # ── Timer duration (shown only for Zeitlimit) ────────────────────
+        self.timer_frame = ctk.CTkFrame(mode_inner, fg_color="transparent")
+        self.timer_seconds_var = ctk.StringVar(value="30")
+        ctk.CTkLabel(
+            self.timer_frame, text="Sekunden pro Frage:",
+            font=ctk.CTkFont(size=13),
+            text_color=TEXT_SECONDARY,
+        ).pack(side="left", padx=(0, 10))
+        ctk.CTkSegmentedButton(
+            self.timer_frame,
+            values=["15", "30", "45", "60"],
+            variable=self.timer_seconds_var,
+            font=ctk.CTkFont(size=13),
+            fg_color=INPUT_BG,
+            selected_color=ACCENT,
+            selected_hover_color=ACCENT_HOVER,
+            unselected_color=CARD_BG,
+            unselected_hover_color=CARD_HOVER,
+            text_color=TEXT_PRIMARY,
+        ).pack(side="left")
+        # Initially hidden
+        self._update_mode_description()
+
         # ── Feedback label for validation ────────────────────────────────
         self.settings_feedback = ctk.CTkLabel(
             scroll, text="", font=ctk.CTkFont(size=13),
@@ -377,6 +455,15 @@ class QuizApp(ctk.CTk):
             scroll, text="▶  Quiz starten", width=240,
             command=self._launch_quiz,
         ).pack(pady=(6, 20))
+
+    def _update_mode_description(self):
+        """Update the mode description text and show/hide timer options."""
+        mode = self.mode_var.get()
+        self.mode_desc_label.configure(text=MODE_DESCRIPTIONS.get(mode, ""))
+        if mode == MODE_TIMED:
+            self.timer_frame.pack(anchor="w", pady=(10, 0))
+        else:
+            self.timer_frame.pack_forget()
 
     def _launch_quiz(self):
         """Filter questions by selected categories & difficulty, then start."""
@@ -410,13 +497,29 @@ class QuizApp(ctk.CTk):
         self.quiz_pool = random.sample(pool, count)
         self.current_index = 0
         self.score = 0
+        self.quiz_mode = self.mode_var.get()
+        self.exam_answers = [None] * len(self.quiz_pool)
+        if self.quiz_mode == MODE_TIMED:
+            self.timer_seconds = int(self.timer_seconds_var.get())
         self._show_question()
 
     # =====================================================================
     # PAGE: Quiz
     # =====================================================================
 
+    def _cancel_timer(self):
+        """Cancel any pending timer callback."""
+        if self.timer_id is not None:
+            self.after_cancel(self.timer_id)
+            self.timer_id = None
+
+    def _abort_quiz(self):
+        """Cancel timer and go home."""
+        self._cancel_timer()
+        self._show_home()
+
     def _show_question(self):
+        self._cancel_timer()
         self._clear()
         self.selected_answer = None
         self.answered = False
@@ -431,7 +534,7 @@ class QuizApp(ctk.CTk):
 
         GhostButton(
             top, text="✕  Abbrechen", width=130, height=36,
-            command=self._show_home,
+            command=self._abort_quiz,
         ).pack(side="left")
 
         ctk.CTkLabel(
@@ -441,12 +544,25 @@ class QuizApp(ctk.CTk):
             text_color=TEXT_SECONDARY,
         ).pack(side="left", expand=True)
 
-        ctk.CTkLabel(
-            top,
-            text=f"⭐ {self.score}",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            text_color=ACCENT,
-        ).pack(side="right", padx=(0, 8))
+        # Score (hidden in exam mode)
+        if self.quiz_mode != MODE_EXAM:
+            ctk.CTkLabel(
+                top,
+                text=f"⭐ {self.score}",
+                font=ctk.CTkFont(size=14, weight="bold"),
+                text_color=ACCENT,
+            ).pack(side="right", padx=(0, 8))
+
+        # Timer display (Zeitlimit mode)
+        if self.quiz_mode == MODE_TIMED:
+            self.timer_remaining = self.timer_seconds
+            self.timer_label = ctk.CTkLabel(
+                top,
+                text=f"⏱ {self.timer_remaining}s",
+                font=ctk.CTkFont(size=14, weight="bold"),
+                text_color=WARN,
+            )
+            self.timer_label.pack(side="right", padx=(0, 16))
 
         # Progress bar
         progress = ctk.CTkProgressBar(
@@ -457,16 +573,28 @@ class QuizApp(ctk.CTk):
         progress.set((self.current_index) / total)
         progress.pack(pady=(14, 0))
 
-        # Category badge
+        # Category + mode badge
         cat = q.get("category", "Allgemein")
+        badge_frame = ctk.CTkFrame(self.container, fg_color="transparent")
+        badge_frame.pack(pady=(22, 6))
         ctk.CTkLabel(
-            self.container,
+            badge_frame,
             text=f"  {cat}  ",
             font=ctk.CTkFont(size=12),
             text_color=ACCENT,
             fg_color=CARD_BG,
             corner_radius=8,
-        ).pack(pady=(22, 6))
+        ).pack(side="left", padx=4)
+        if self.quiz_mode != MODE_STANDARD:
+            mode_color = {MODE_LEARN: SUCCESS, MODE_EXAM: TEXT_SECONDARY, MODE_TIMED: WARN}.get(self.quiz_mode, TEXT_MUTED)
+            ctk.CTkLabel(
+                badge_frame,
+                text=f"  {self.quiz_mode}  ",
+                font=ctk.CTkFont(size=11),
+                text_color=mode_color,
+                fg_color=CARD_BG,
+                corner_radius=8,
+            ).pack(side="left", padx=4)
 
         # Question text
         ctk.CTkLabel(
@@ -503,11 +631,36 @@ class QuizApp(ctk.CTk):
             self.option_buttons.append(btn)
 
         # Confirm / Next button (hidden until answer chosen)
+        btn_text = "Bestätigen" if self.quiz_mode != MODE_EXAM else "Weiter  →"
         self.action_btn = AccentButton(
-            self.container, text="Bestätigen", width=200,
+            self.container, text=btn_text, width=200,
             command=self._confirm_answer,
         )
         # Not packed yet – shown after selection
+
+        # Placeholder for explanation (Lernmodus)
+        self.explanation_label = None
+
+        # Start timer if timed mode
+        if self.quiz_mode == MODE_TIMED:
+            self._tick_timer()
+
+    def _tick_timer(self):
+        """Decrement the countdown and auto-submit when time runs out."""
+        if self.answered:
+            return
+        self.timer_remaining -= 1
+        if self.timer_remaining <= 0:
+            # Time's up – auto-confirm with whatever is selected (or None)
+            self.timer_label.configure(text="⏱ 0s", text_color=ERROR)
+            if self.selected_answer is None:
+                self.selected_answer = -1  # sentinel for "no answer"
+            self._confirm_answer()
+            return
+        # Update display
+        color = WARN if self.timer_remaining > 10 else ERROR
+        self.timer_label.configure(text=f"⏱ {self.timer_remaining}s", text_color=color)
+        self.timer_id = self.after(1000, self._tick_timer)
 
     def _select_answer(self, idx: int):
         if self.answered:
@@ -522,13 +675,29 @@ class QuizApp(ctk.CTk):
         self.action_btn.pack(pady=(20, 10))
 
     def _confirm_answer(self):
-        if self.answered or self.selected_answer is None:
+        if self.answered:
+            return
+        # In exam mode, allow skipping (no answer = None stored)
+        if self.selected_answer is None and self.quiz_mode != MODE_EXAM:
             return
         self.answered = True
+        self._cancel_timer()
 
         q = self.quiz_pool[self.current_index]
         correct = q["correct"]
+        is_correct = self.selected_answer == correct
 
+        # Store answer for exam review
+        self.exam_answers[self.current_index] = self.selected_answer
+
+        if self.quiz_mode == MODE_EXAM:
+            # No feedback – just move on
+            if is_correct:
+                self.score += 1
+            self._next_question()
+            return
+
+        # ── Standard / Lernmodus / Zeitlimit: show feedback ──────────────
         for i, btn in enumerate(self.option_buttons):
             if i == correct:
                 btn.configure(fg_color=SUCCESS, border_color=SUCCESS, text_color="#ffffff")
@@ -536,8 +705,38 @@ class QuizApp(ctk.CTk):
                 btn.configure(fg_color=ERROR, border_color=ERROR, text_color="#ffffff")
             btn.configure(state="disabled")
 
-        if self.selected_answer == correct:
+        if is_correct:
             self.score += 1
+
+        # Show explanation in Lernmodus
+        if self.quiz_mode == MODE_LEARN:
+            explanation = q.get("explanation", "")
+            if explanation:
+                expl_card = Card(self.container, border_color=SUCCESS)
+                expl_card.pack(padx=60, pady=(12, 0))
+                expl_inner = ctk.CTkFrame(expl_card, fg_color="transparent")
+                expl_inner.pack(padx=16, pady=12)
+                ctk.CTkLabel(
+                    expl_inner, text="💡 Erklärung",
+                    font=ctk.CTkFont(size=13, weight="bold"),
+                    text_color=SUCCESS,
+                ).pack(anchor="w")
+                ctk.CTkLabel(
+                    expl_inner, text=explanation,
+                    font=ctk.CTkFont(size=13),
+                    text_color=TEXT_SECONDARY,
+                    wraplength=480,
+                    justify="left",
+                ).pack(anchor="w", pady=(4, 0))
+            elif not is_correct:
+                letters = "ABCD"
+                ctk.CTkLabel(
+                    self.container,
+                    text=f"💡 Die richtige Antwort ist {letters[correct]}: {q['options'][correct]}",
+                    font=ctk.CTkFont(size=13),
+                    text_color=TEXT_SECONDARY,
+                    wraplength=500,
+                ).pack(pady=(10, 0))
 
         # Switch action button to "Next"
         is_last = self.current_index == len(self.quiz_pool) - 1
@@ -549,7 +748,10 @@ class QuizApp(ctk.CTk):
     def _next_question(self):
         self.current_index += 1
         if self.current_index >= len(self.quiz_pool):
-            self._show_result()
+            if self.quiz_mode == MODE_EXAM:
+                self._show_exam_review()
+            else:
+                self._show_result()
         else:
             self._show_question()
 
@@ -557,6 +759,7 @@ class QuizApp(ctk.CTk):
     # PAGE: Result
     # =====================================================================
     def _show_result(self):
+        self._cancel_timer()
         self._clear()
         total = len(self.quiz_pool)
         pct = self.score / total * 100 if total else 0
@@ -602,6 +805,124 @@ class QuizApp(ctk.CTk):
 
         btn_row = ctk.CTkFrame(wrapper, fg_color="transparent")
         btn_row.pack(pady=10)
+        AccentButton(
+            btn_row, text="🔄  Nochmal spielen", width=200,
+            command=self._start_quiz,
+        ).pack(side="left", padx=6)
+        GhostButton(
+            btn_row, text="🏠  Startseite", width=200,
+            command=self._show_home,
+        ).pack(side="left", padx=6)
+
+    # =====================================================================
+    # PAGE: Exam Review (Prüfungsmodus)
+    # =====================================================================
+    def _show_exam_review(self):
+        self._clear()
+        total = len(self.quiz_pool)
+        pct = self.score / total * 100 if total else 0
+
+        scroll = ctk.CTkScrollableFrame(
+            self.container, fg_color="transparent",
+            scrollbar_button_color=BORDER,
+        )
+        scroll.pack(fill="both", expand=True, padx=30, pady=20)
+
+        # Header with score
+        if pct >= 80:
+            emoji, comment = "🏆", "Ausgezeichnet!"
+        elif pct >= 60:
+            emoji, comment = "👍", "Gut gemacht!"
+        elif pct >= 40:
+            emoji, comment = "📚", "Weiter üben!"
+        else:
+            emoji, comment = "💪", "Nicht aufgeben!"
+
+        header = ctk.CTkFrame(scroll, fg_color="transparent")
+        header.pack(pady=(0, 10))
+        ctk.CTkLabel(
+            header, text=f"{emoji}  {comment}  —  {self.score}/{total} ({pct:.0f} %)",
+            font=ctk.CTkFont(size=22, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack()
+        ctk.CTkLabel(
+            header, text="Prüfungsmodus – Auswertung",
+            font=ctk.CTkFont(size=14),
+            text_color=TEXT_SECONDARY,
+        ).pack(pady=(2, 0))
+
+        # Review each question
+        letters = "ABCD"
+        for idx, q in enumerate(self.quiz_pool):
+            user_ans = self.exam_answers[idx]
+            correct = q["correct"]
+            is_correct = user_ans == correct
+
+            border_col = SUCCESS if is_correct else ERROR
+            card = Card(scroll, border_color=border_col)
+            card.pack(fill="x", pady=6)
+            inner = ctk.CTkFrame(card, fg_color="transparent")
+            inner.pack(fill="x", padx=20, pady=14)
+
+            # Question number + status
+            status_text = "✓ Richtig" if is_correct else "✗ Falsch"
+            status_color = SUCCESS if is_correct else ERROR
+            q_header = ctk.CTkFrame(inner, fg_color="transparent")
+            q_header.pack(fill="x")
+            ctk.CTkLabel(
+                q_header,
+                text=f"Frage {idx + 1}",
+                font=ctk.CTkFont(size=13, weight="bold"),
+                text_color=TEXT_MUTED,
+            ).pack(side="left")
+            ctk.CTkLabel(
+                q_header,
+                text=status_text,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                text_color=status_color,
+            ).pack(side="right")
+
+            # Question text
+            ctk.CTkLabel(
+                inner,
+                text=q["question"],
+                font=ctk.CTkFont(size=15, weight="bold"),
+                text_color=TEXT_PRIMARY,
+                wraplength=560,
+                justify="left",
+                anchor="w",
+            ).pack(anchor="w", pady=(6, 8))
+
+            # Show answers
+            for opt_idx, opt_text in enumerate(q["options"]):
+                if opt_idx == correct:
+                    prefix = "✓"
+                    color = SUCCESS
+                elif opt_idx == user_ans and opt_idx != correct:
+                    prefix = "✗"
+                    color = ERROR
+                else:
+                    prefix = " "
+                    color = TEXT_MUTED
+                ctk.CTkLabel(
+                    inner,
+                    text=f"  {prefix}  {letters[opt_idx]}   {opt_text}",
+                    font=ctk.CTkFont(size=13),
+                    text_color=color,
+                    anchor="w",
+                ).pack(anchor="w", pady=1)
+
+            if user_ans is None or user_ans == -1:
+                ctk.CTkLabel(
+                    inner,
+                    text="  (Nicht beantwortet)",
+                    font=ctk.CTkFont(size=12, slant="italic"),
+                    text_color=TEXT_MUTED,
+                ).pack(anchor="w", pady=(4, 0))
+
+        # Bottom buttons
+        btn_row = ctk.CTkFrame(scroll, fg_color="transparent")
+        btn_row.pack(pady=16)
         AccentButton(
             btn_row, text="🔄  Nochmal spielen", width=200,
             command=self._start_quiz,
@@ -708,6 +1029,17 @@ class QuizApp(ctk.CTk):
                 border_color=BORDER, text_color=TEXT_PRIMARY,
             ).pack(side="left", padx=(0, 20))
 
+        # Explanation (for Lernmodus)
+        ctk.CTkLabel(form, text="Erklärung (optional, für Lernmodus)",
+                      text_color=TEXT_SECONDARY,
+                      font=ctk.CTkFont(size=13)).pack(anchor="w", pady=(4, 2))
+        self.add_explanation = ctk.CTkTextbox(
+            form, height=60, fg_color=INPUT_BG, border_color=BORDER,
+            border_width=1, corner_radius=10, text_color=TEXT_PRIMARY,
+            font=ctk.CTkFont(size=14),
+        )
+        self.add_explanation.pack(fill="x", pady=(2, 14))
+
         # Feedback label
         self.add_feedback = ctk.CTkLabel(
             form, text="", font=ctk.CTkFont(size=13),
@@ -737,6 +1069,7 @@ class QuizApp(ctk.CTk):
             return
 
         difficulty = self.difficulty_var.get()
+        explanation = self.add_explanation.get("1.0", "end").strip()
         new_q = {
             "question": question_text,
             "options": options,
@@ -744,6 +1077,8 @@ class QuizApp(ctk.CTk):
             "category": category,
             "difficulty": difficulty,
         }
+        if explanation:
+            new_q["explanation"] = explanation
         self.questions.append(new_q)
         save_questions(self.questions)
 
@@ -756,6 +1091,7 @@ class QuizApp(ctk.CTk):
         for e in self.add_options:
             e.delete(0, "end")
         self.add_category.delete(0, "end")
+        self.add_explanation.delete("1.0", "end")
         self.correct_var.set("A")
         self.difficulty_var.set("Mittel")
 
