@@ -3,90 +3,105 @@
     "question": "Wofür steht die Abkürzung 'CPU'?",
     "options": ["Central Processing Unit", "Computer Personal Unit", "Central Program Utility", "Core Processing Unit"],
     "correct": 0,
-    "category": "Hardware"
+    "category": "Hardware",
+    "difficulty": "Leicht"
   },
   {
     "question": "Welche Schicht des OSI-Modells ist für die Ende-zu-Ende-Kommunikation zuständig?",
     "options": ["Sicherungsschicht", "Vermittlungsschicht", "Transportschicht", "Anwendungsschicht"],
     "correct": 2,
-    "category": "Netzwerk"
+    "category": "Netzwerk",
+    "difficulty": "Schwer"
   },
   {
     "question": "Was ist die Hauptaufgabe eines Betriebssystems?",
     "options": ["Textverarbeitung", "Verwaltung von Hardware- und Software-Ressourcen", "Internetzugang bereitstellen", "Datenbanken verwalten"],
     "correct": 1,
-    "category": "Software"
+    "category": "Software",
+    "difficulty": "Leicht"
   },
   {
     "question": "Welcher Speichertyp verliert seine Daten beim Ausschalten?",
     "options": ["SSD", "HDD", "RAM", "ROM"],
     "correct": 2,
-    "category": "Hardware"
+    "category": "Hardware",
+    "difficulty": "Leicht"
   },
   {
     "question": "Was bedeutet 'IP' in IP-Adresse?",
     "options": ["Internet Protocol", "Internal Process", "Information Platform", "Integrated Program"],
     "correct": 0,
-    "category": "Netzwerk"
+    "category": "Netzwerk",
+    "difficulty": "Leicht"
   },
   {
     "question": "Welches Protokoll wird für den sicheren Datentransfer im Web verwendet?",
     "options": ["HTTP", "FTP", "HTTPS", "SMTP"],
     "correct": 2,
-    "category": "Netzwerk"
+    "category": "Netzwerk",
+    "difficulty": "Leicht"
   },
   {
     "question": "Was ist ein Firewall?",
     "options": ["Ein Antivirusprogramm", "Ein Sicherheitssystem zur Netzwerküberwachung", "Ein Betriebssystem", "Ein Speichermedium"],
     "correct": 1,
-    "category": "Sicherheit"
+    "category": "Sicherheit",
+    "difficulty": "Mittel"
   },
   {
     "question": "Wie viele Bits hat ein Byte?",
     "options": ["4", "8", "16", "32"],
     "correct": 1,
-    "category": "Grundlagen"
+    "category": "Grundlagen",
+    "difficulty": "Leicht"
   },
   {
     "question": "Was ist die binäre Darstellung der Dezimalzahl 10?",
     "options": ["1010", "1100", "1001", "1110"],
     "correct": 0,
-    "category": "Grundlagen"
+    "category": "Grundlagen",
+    "difficulty": "Mittel"
   },
   {
     "question": "Welches Gerät verbindet zwei verschiedene Netzwerke miteinander?",
     "options": ["Switch", "Hub", "Router", "Repeater"],
     "correct": 2,
-    "category": "Netzwerk"
+    "category": "Netzwerk",
+    "difficulty": "Leicht"
   },
   {
     "question": "Was versteht man unter 'Phishing'?",
     "options": ["Eine Programmiersprache", "Das Abfangen von Daten durch gefälschte Webseiten/E-Mails", "Ein Netzwerkprotokoll", "Eine Backup-Methode"],
     "correct": 1,
-    "category": "Sicherheit"
+    "category": "Sicherheit",
+    "difficulty": "Mittel"
   },
   {
     "question": "Welche Einheit wird für die Taktfrequenz eines Prozessors verwendet?",
     "options": ["Watt", "Hertz (GHz)", "Byte", "Volt"],
     "correct": 1,
-    "category": "Hardware"
+    "category": "Hardware",
+    "difficulty": "Mittel"
   },
   {
     "question": "Was ist RAID?",
     "options": ["Ein Antivirenprogramm", "Eine Methode zur redundanten Datenspeicherung", "Ein Netzwerkprotokoll", "Eine Programmiersprache"],
     "correct": 1,
-    "category": "Hardware"
+    "category": "Hardware",
+    "difficulty": "Schwer"
   },
   {
     "question": "Welches Netzwerkgerät arbeitet auf Schicht 2 des OSI-Modells?",
     "options": ["Router", "Switch", "Gateway", "Firewall"],
     "correct": 1,
-    "category": "Netzwerk"
+    "category": "Netzwerk",
+    "difficulty": "Schwer"
   },
   {
     "question": "Was ist der Unterschied zwischen TCP und UDP?",
     "options": ["TCP ist schneller als UDP", "TCP ist verbindungsorientiert, UDP ist verbindungslos", "UDP ist sicherer als TCP", "Es gibt keinen Unterschied"],
     "correct": 1,
-    "category": "Netzwerk"
+    "category": "Netzwerk",
+    "difficulty": "Mittel"
   }
 ]

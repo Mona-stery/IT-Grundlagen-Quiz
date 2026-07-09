@@ -28,11 +28,20 @@ ACCENT        = "#6c63ff"
 ACCENT_HOVER  = "#5a52e0"
 SUCCESS       = "#2ecc71"
 ERROR         = "#e74c3c"
+WARN          = "#f39c12"
 TEXT_PRIMARY   = "#e8e8f0"
 TEXT_SECONDARY = "#9090a8"
 TEXT_MUTED     = "#60607a"
 BORDER         = "#2a2a45"
 INPUT_BG       = "#12122a"
+
+# ── Difficulty colours ───────────────────────────────────────────────────────
+DIFFICULTY_COLORS = {
+    "Leicht": SUCCESS,
+    "Mittel": WARN,
+    "Schwer": ERROR,
+}
+DIFFICULTY_LEVELS = ["Leicht", "Mittel", "Schwer"]
 
 # ── Appearance ───────────────────────────────────────────────────────────────
 ctk.set_appearance_mode("dark")
@@ -206,16 +215,206 @@ class QuizApp(ctk.CTk):
         ).pack(pady=6)
 
     # =====================================================================
-    # PAGE: Quiz
+    # PAGE: Quiz Settings
     # =====================================================================
     def _start_quiz(self):
         if not self.questions:
             self._show_message("Keine Fragen vorhanden", "Füge zuerst Fragen hinzu!")
             return
-        self.quiz_pool = random.sample(self.questions, min(len(self.questions), 15))
+        self._show_quiz_settings()
+
+    def _show_quiz_settings(self):
+        self._clear()
+
+        scroll = ctk.CTkScrollableFrame(
+            self.container, fg_color="transparent",
+            scrollbar_button_color=BORDER,
+        )
+        scroll.pack(fill="both", expand=True, padx=30, pady=20)
+
+        # Header
+        top = ctk.CTkFrame(scroll, fg_color="transparent")
+        top.pack(fill="x")
+        GhostButton(
+            top, text="←  Zurück", width=110, height=36,
+            command=self._show_home,
+        ).pack(side="left")
+        ctk.CTkLabel(
+            top, text="Quiz konfigurieren",
+            font=ctk.CTkFont(size=22, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(side="left", padx=16)
+
+        # ── Category filter ──────────────────────────────────────────────
+        cat_card = Card(scroll)
+        cat_card.pack(fill="x", pady=(20, 10))
+        cat_inner = ctk.CTkFrame(cat_card, fg_color="transparent")
+        cat_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            cat_inner, text="📁  Kategorien",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 4))
+        ctk.CTkLabel(
+            cat_inner, text="Wähle die Kategorien, die abgefragt werden sollen.",
+            font=ctk.CTkFont(size=13),
+            text_color=TEXT_MUTED,
+        ).pack(anchor="w", pady=(0, 12))
+
+        categories = sorted({q.get("category", "Allgemein") for q in self.questions})
+        self.cat_vars: dict[str, ctk.BooleanVar] = {}
+        cat_grid = ctk.CTkFrame(cat_inner, fg_color="transparent")
+        cat_grid.pack(anchor="w")
+
+        for i, cat in enumerate(categories):
+            var = ctk.BooleanVar(value=True)
+            self.cat_vars[cat] = var
+            count = sum(1 for q in self.questions if q.get("category", "Allgemein") == cat)
+            cb = ctk.CTkCheckBox(
+                cat_grid, text=f"{cat}  ({count})",
+                variable=var,
+                font=ctk.CTkFont(size=14),
+                fg_color=ACCENT, hover_color=ACCENT_HOVER,
+                border_color=BORDER, text_color=TEXT_PRIMARY,
+                checkmark_color="#ffffff",
+            )
+            cb.grid(row=i // 2, column=i % 2, sticky="w", padx=(0, 30), pady=4)
+
+        # Select all / none buttons
+        sel_row = ctk.CTkFrame(cat_inner, fg_color="transparent")
+        sel_row.pack(anchor="w", pady=(8, 0))
+        ctk.CTkButton(
+            sel_row, text="Alle auswählen", width=120, height=30,
+            fg_color="transparent", hover_color=CARD_HOVER,
+            text_color=ACCENT, font=ctk.CTkFont(size=12),
+            command=lambda: [v.set(True) for v in self.cat_vars.values()],
+        ).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(
+            sel_row, text="Keine auswählen", width=120, height=30,
+            fg_color="transparent", hover_color=CARD_HOVER,
+            text_color=TEXT_MUTED, font=ctk.CTkFont(size=12),
+            command=lambda: [v.set(False) for v in self.cat_vars.values()],
+        ).pack(side="left")
+
+        # ── Difficulty filter ────────────────────────────────────────────
+        diff_card = Card(scroll)
+        diff_card.pack(fill="x", pady=10)
+        diff_inner = ctk.CTkFrame(diff_card, fg_color="transparent")
+        diff_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            diff_inner, text="📊  Schwierigkeitsgrad",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 4))
+        ctk.CTkLabel(
+            diff_inner, text="Filtere nach Schwierigkeitsgrad.",
+            font=ctk.CTkFont(size=13),
+            text_color=TEXT_MUTED,
+        ).pack(anchor="w", pady=(0, 12))
+
+        self.diff_vars: dict[str, ctk.BooleanVar] = {}
+        diff_row = ctk.CTkFrame(diff_inner, fg_color="transparent")
+        diff_row.pack(anchor="w")
+
+        for level in DIFFICULTY_LEVELS:
+            var = ctk.BooleanVar(value=True)
+            self.diff_vars[level] = var
+            color = DIFFICULTY_COLORS[level]
+            count = sum(1 for q in self.questions if q.get("difficulty", "Mittel") == level)
+            cb = ctk.CTkCheckBox(
+                diff_row, text=f"{level}  ({count})",
+                variable=var,
+                font=ctk.CTkFont(size=14),
+                fg_color=color, hover_color=color,
+                border_color=BORDER, text_color=TEXT_PRIMARY,
+                checkmark_color="#ffffff",
+            )
+            cb.pack(side="left", padx=(0, 24), pady=4)
+
+        # ── Quiz length ──────────────────────────────────────────────────
+        len_card = Card(scroll)
+        len_card.pack(fill="x", pady=10)
+        len_inner = ctk.CTkFrame(len_card, fg_color="transparent")
+        len_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            len_inner, text="🔢  Fragenanzahl",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 4))
+        ctk.CTkLabel(
+            len_inner, text="Wie viele Fragen soll das Quiz haben?",
+            font=ctk.CTkFont(size=13),
+            text_color=TEXT_MUTED,
+        ).pack(anchor="w", pady=(0, 12))
+
+        self.quiz_length_var = ctk.StringVar(value="10")
+        seg_btn = ctk.CTkSegmentedButton(
+            len_inner,
+            values=["5", "10", "15", "Alle"],
+            variable=self.quiz_length_var,
+            font=ctk.CTkFont(size=14),
+            fg_color=INPUT_BG,
+            selected_color=ACCENT,
+            selected_hover_color=ACCENT_HOVER,
+            unselected_color=CARD_BG,
+            unselected_hover_color=CARD_HOVER,
+            text_color=TEXT_PRIMARY,
+        )
+        seg_btn.pack(anchor="w")
+
+        # ── Feedback label for validation ────────────────────────────────
+        self.settings_feedback = ctk.CTkLabel(
+            scroll, text="", font=ctk.CTkFont(size=13),
+            text_color=ERROR,
+        )
+        self.settings_feedback.pack(pady=(10, 0))
+
+        # ── Start button ─────────────────────────────────────────────────
+        AccentButton(
+            scroll, text="▶  Quiz starten", width=240,
+            command=self._launch_quiz,
+        ).pack(pady=(6, 20))
+
+    def _launch_quiz(self):
+        """Filter questions by selected categories & difficulty, then start."""
+        selected_cats = {cat for cat, var in self.cat_vars.items() if var.get()}
+        selected_diffs = {d for d, var in self.diff_vars.items() if var.get()}
+
+        if not selected_cats:
+            self.settings_feedback.configure(text="⚠ Bitte mindestens eine Kategorie auswählen.")
+            return
+        if not selected_diffs:
+            self.settings_feedback.configure(text="⚠ Bitte mindestens einen Schwierigkeitsgrad auswählen.")
+            return
+
+        pool = [
+            q for q in self.questions
+            if q.get("category", "Allgemein") in selected_cats
+            and q.get("difficulty", "Mittel") in selected_diffs
+        ]
+
+        if not pool:
+            self.settings_feedback.configure(text="⚠ Keine Fragen mit diesen Filtern gefunden.")
+            return
+
+        # Determine quiz length
+        length_str = self.quiz_length_var.get()
+        if length_str == "Alle":
+            count = len(pool)
+        else:
+            count = min(int(length_str), len(pool))
+
+        self.quiz_pool = random.sample(pool, count)
         self.current_index = 0
         self.score = 0
         self._show_question()
+
+    # =====================================================================
+    # PAGE: Quiz
+    # =====================================================================
 
     def _show_question(self):
         self._clear()
@@ -493,6 +692,22 @@ class QuizApp(ctk.CTk):
                 border_color=BORDER, text_color=TEXT_PRIMARY,
             ).pack(side="left", padx=(0, 20))
 
+        # Difficulty selector
+        ctk.CTkLabel(form, text="Schwierigkeitsgrad",
+                      text_color=TEXT_SECONDARY,
+                      font=ctk.CTkFont(size=13)).pack(anchor="w", pady=(4, 2))
+        self.difficulty_var = ctk.StringVar(value="Mittel")
+        diff_row = ctk.CTkFrame(form, fg_color="transparent")
+        diff_row.pack(anchor="w", pady=(0, 16))
+        for level in DIFFICULTY_LEVELS:
+            ctk.CTkRadioButton(
+                diff_row, text=level, variable=self.difficulty_var,
+                value=level, font=ctk.CTkFont(size=14),
+                fg_color=DIFFICULTY_COLORS[level],
+                hover_color=DIFFICULTY_COLORS[level],
+                border_color=BORDER, text_color=TEXT_PRIMARY,
+            ).pack(side="left", padx=(0, 20))
+
         # Feedback label
         self.add_feedback = ctk.CTkLabel(
             form, text="", font=ctk.CTkFont(size=13),
@@ -521,11 +736,13 @@ class QuizApp(ctk.CTk):
             self.add_feedback.configure(text="⚠ Alle vier Antworten ausfüllen.", text_color=ERROR)
             return
 
+        difficulty = self.difficulty_var.get()
         new_q = {
             "question": question_text,
             "options": options,
             "correct": correct_idx,
             "category": category,
+            "difficulty": difficulty,
         }
         self.questions.append(new_q)
         save_questions(self.questions)
@@ -540,6 +757,7 @@ class QuizApp(ctk.CTk):
             e.delete(0, "end")
         self.add_category.delete(0, "end")
         self.correct_var.set("A")
+        self.difficulty_var.set("Mittel")
 
     # =====================================================================
     # PAGE: Manage Questions
@@ -594,11 +812,23 @@ class QuizApp(ctk.CTk):
             info.pack(side="left", fill="x", expand=True)
 
             cat = q.get("category", "Allgemein")
+            diff = q.get("difficulty", "Mittel")
+            badge_row = ctk.CTkFrame(info, fg_color="transparent")
+            badge_row.pack(anchor="w")
             ctk.CTkLabel(
-                info, text=cat,
+                badge_row, text=f"  {cat}  ",
                 font=ctk.CTkFont(size=11),
                 text_color=ACCENT,
-            ).pack(anchor="w")
+                fg_color=CARD_HOVER,
+                corner_radius=6,
+            ).pack(side="left", padx=(0, 6))
+            ctk.CTkLabel(
+                badge_row, text=f"  {diff}  ",
+                font=ctk.CTkFont(size=11),
+                text_color=DIFFICULTY_COLORS.get(diff, TEXT_MUTED),
+                fg_color=CARD_HOVER,
+                corner_radius=6,
+            ).pack(side="left")
             ctk.CTkLabel(
                 info,
                 text=q["question"][:90] + ("…" if len(q["question"]) > 90 else ""),
