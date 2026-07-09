@@ -118,5 +118,23 @@
     "category": "Netzwerk",
     "difficulty": "Mittel",
     "explanation": "TCP baut eine Verbindung auf (3-Way-Handshake) und garantiert die Zustellung. UDP ist verbindungslos und schneller, aber ohne Zustellgarantie – ideal für Streaming oder DNS."
+  },
+  {
+    "question": "Wofür steht die Abkürzung SDRAM?",
+    "options": ["Super Dynamic Random Access Memory", "Synchronous Dynamic Random Access Memory", "Small Diameter Random Access Memory", "Small Data Random Access Memory"],
+    "correct": 1,
+    "category": "Hardware"
+  },
+   {
+    "question": "Welche Prozessorarchitektur wird am häufigsten in mobilen Geräten verwendet?",
+    "options": ["ARM64", "generic 64-Bit", "x86", "AMR64"],
+    "correct": 0,
+    "category": "Hardware"
+  },
+  {
+    "question": "Wofür steht die Abkürzung GPU?",
+    "options": ["Central Processing Unit", "Good Processing Unit", "Graph Processing Unit", "Graphics Processing Unit"],
+    "correct": 3,
+    "category": "Hardware"
   }
 ]
