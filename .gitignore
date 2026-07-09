@@ -4,6 +4,11 @@ __pycache__/
 *$py.class
 *.so
 
+# ── User data (quiz stats) ───────────────────────────────────────────────
+stats.json
+*$py.class
+*.so
+
 # ── Virtual Environments ─────────────────────────────────────────────────
 .venv/
 venv/

@@ -6,8 +6,10 @@ Questions are persisted in questions.json next to the script.
 
 import json
 import random
+import hashlib
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 try:
@@ -19,6 +21,7 @@ except ImportError:
 # ── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 QUESTIONS_FILE = BASE_DIR / "questions.json"
+STATS_FILE = BASE_DIR / "stats.json"
 
 # ── Colour palette ───────────────────────────────────────────────────────────
 BG_DARK       = "#0f0f1a"
@@ -82,6 +85,48 @@ def save_questions(questions: list[dict]) -> None:
         json.dump(questions, fh, ensure_ascii=False, indent=2)
 
 
+def load_stats() -> dict:
+    """Load statistics from stats.json."""
+    if not STATS_FILE.exists():
+        return {"history": [], "per_question": {}}
+    try:
+        with open(STATS_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+            data.setdefault("history", [])
+            data.setdefault("per_question", {})
+            return data
+    except (json.JSONDecodeError, OSError):
+        return {"history": [], "per_question": {}}
+
+
+def save_stats(stats: dict) -> None:
+    """Persist statistics to disk."""
+    with open(STATS_FILE, "w", encoding="utf-8") as fh:
+        json.dump(stats, fh, ensure_ascii=False, indent=2)
+
+
+def question_key(q: dict) -> str:
+    """Create a stable hash key for a question."""
+    raw = q["question"] + "|".join(q["options"])
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()[:12]
+
+
+def get_weak_questions(questions: list[dict], stats: dict, min_seen: int = 1) -> list[dict]:
+    """Return questions sorted by error rate (worst first)."""
+    pq = stats.get("per_question", {})
+    scored = []
+    for q in questions:
+        key = question_key(q)
+        info = pq.get(key, {})
+        seen = info.get("seen", 0)
+        correct = info.get("correct", 0)
+        if seen >= min_seen:
+            error_rate = 1.0 - (correct / seen)
+            scored.append((error_rate, seen, q))
+    scored.sort(key=lambda x: (-x[0], -x[1]))
+    return [q for _, _, q in scored if _ > 0]  # only include questions with errors
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 # Reusable UI widgets
 # ═════════════════════════════════════════════════════════════════════════════
@@ -139,6 +184,7 @@ class QuizApp(ctk.CTk):
 
         # ── State ────────────────────────────────────────────────────────
         self.questions: list[dict] = load_questions()
+        self.stats: dict = load_stats()
         self.quiz_pool: list[dict] = []
         self.current_index: int = 0
         self.score: int = 0
@@ -231,6 +277,11 @@ class QuizApp(ctk.CTk):
         GhostButton(
             btn_frame, text="📋  Fragen verwalten", width=220,
             command=self._show_manage_questions,
+        ).pack(pady=6)
+
+        GhostButton(
+            btn_frame, text="📊  Statistiken", width=220,
+            command=self._show_stats,
         ).pack(pady=6)
 
     # =====================================================================
@@ -690,6 +741,14 @@ class QuizApp(ctk.CTk):
         # Store answer for exam review
         self.exam_answers[self.current_index] = self.selected_answer
 
+        # Track per-question stats
+        key = question_key(q)
+        pq = self.stats.setdefault("per_question", {})
+        pq.setdefault(key, {"seen": 0, "correct": 0})
+        pq[key]["seen"] += 1
+        if is_correct:
+            pq[key]["correct"] += 1
+
         if self.quiz_mode == MODE_EXAM:
             # No feedback – just move on
             if is_correct:
@@ -760,6 +819,7 @@ class QuizApp(ctk.CTk):
     # =====================================================================
     def _show_result(self):
         self._cancel_timer()
+        self._record_history()
         self._clear()
         total = len(self.quiz_pool)
         pct = self.score / total * 100 if total else 0
@@ -814,10 +874,24 @@ class QuizApp(ctk.CTk):
             command=self._show_home,
         ).pack(side="left", padx=6)
 
+    def _record_history(self):
+        """Save a quiz result entry to the stats history."""
+        cats = list({q.get("category", "Allgemein") for q in self.quiz_pool})
+        entry = {
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "score": self.score,
+            "total": len(self.quiz_pool),
+            "mode": self.quiz_mode,
+            "categories": cats,
+        }
+        self.stats.setdefault("history", []).append(entry)
+        save_stats(self.stats)
+
     # =====================================================================
     # PAGE: Exam Review (Prüfungsmodus)
     # =====================================================================
     def _show_exam_review(self):
+        self._record_history()
         self._clear()
         total = len(self.quiz_pool)
         pct = self.score / total * 100 if total else 0
@@ -931,6 +1005,334 @@ class QuizApp(ctk.CTk):
             btn_row, text="🏠  Startseite", width=200,
             command=self._show_home,
         ).pack(side="left", padx=6)
+
+    # =====================================================================
+    # PAGE: Statistics
+    # =====================================================================
+    def _show_stats(self):
+        self._clear()
+
+        scroll = ctk.CTkScrollableFrame(
+            self.container, fg_color="transparent",
+            scrollbar_button_color=BORDER,
+        )
+        scroll.pack(fill="both", expand=True, padx=30, pady=20)
+
+        # Header
+        top = ctk.CTkFrame(scroll, fg_color="transparent")
+        top.pack(fill="x")
+        GhostButton(
+            top, text="←  Zurück", width=110, height=36,
+            command=self._show_home,
+        ).pack(side="left")
+        ctk.CTkLabel(
+            top, text="📊  Statistiken",
+            font=ctk.CTkFont(size=22, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(side="left", padx=16)
+
+        history = self.stats.get("history", [])
+        pq = self.stats.get("per_question", {})
+
+        if not history:
+            ctk.CTkLabel(
+                scroll,
+                text="Noch keine Quiz-Ergebnisse vorhanden.\nSpiele ein Quiz, um deine Statistiken zu sehen!",
+                font=ctk.CTkFont(size=15),
+                text_color=TEXT_SECONDARY,
+                justify="center",
+            ).pack(expand=True, pady=60)
+            return
+
+        # ── Overall stats card ───────────────────────────────────────────
+        overview_card = Card(scroll)
+        overview_card.pack(fill="x", pady=(20, 10))
+        overview_inner = ctk.CTkFrame(overview_card, fg_color="transparent")
+        overview_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            overview_inner, text="🏅  Gesamtübersicht",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 12))
+
+        total_quizzes = len(history)
+        total_correct = sum(h["score"] for h in history)
+        total_questions = sum(h["total"] for h in history)
+        avg_pct = (total_correct / total_questions * 100) if total_questions else 0
+        best_pct = max((h["score"] / h["total"] * 100) for h in history) if history else 0
+
+        stats_row = ctk.CTkFrame(overview_inner, fg_color="transparent")
+        stats_row.pack(fill="x")
+        for value, label in [
+            (str(total_quizzes), "Quiz gespielt"),
+            (f"{avg_pct:.0f} %", "Ø Ergebnis"),
+            (f"{best_pct:.0f} %", "Bestes Ergebnis"),
+            (str(total_correct), "Richtig gesamt"),
+        ]:
+            cell = ctk.CTkFrame(stats_row, fg_color="transparent")
+            cell.pack(side="left", expand=True)
+            ctk.CTkLabel(
+                cell, text=value,
+                font=ctk.CTkFont(size=24, weight="bold"),
+                text_color=ACCENT,
+            ).pack()
+            ctk.CTkLabel(
+                cell, text=label,
+                font=ctk.CTkFont(size=12),
+                text_color=TEXT_MUTED,
+            ).pack()
+
+        # ── Progress chart (last 10 quizzes) ─────────────────────────────
+        chart_card = Card(scroll)
+        chart_card.pack(fill="x", pady=10)
+        chart_inner = ctk.CTkFrame(chart_card, fg_color="transparent")
+        chart_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            chart_inner, text="📈  Verlauf (letzte 10 Quiz)",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 12))
+
+        recent = history[-10:]
+        chart_frame = ctk.CTkFrame(chart_inner, fg_color="transparent")
+        chart_frame.pack(fill="x")
+
+        # Bar chart using progress bars
+        BAR_HEIGHT = 120
+        for i, entry in enumerate(recent):
+            pct = entry["score"] / entry["total"] * 100 if entry["total"] else 0
+            col = ctk.CTkFrame(chart_frame, fg_color="transparent")
+            col.pack(side="left", expand=True, fill="both", padx=2)
+
+            # Percentage label on top
+            ctk.CTkLabel(
+                col, text=f"{pct:.0f}%",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                text_color=TEXT_PRIMARY if pct >= 60 else ERROR,
+            ).pack()
+
+            # Bar container
+            bar_outer = ctk.CTkFrame(col, fg_color=INPUT_BG, corner_radius=6, height=BAR_HEIGHT, width=28)
+            bar_outer.pack(pady=2)
+            bar_outer.pack_propagate(False)
+
+            # Filled bar from bottom
+            fill_height = max(4, int(BAR_HEIGHT * pct / 100))
+            if pct >= 80:
+                bar_color = SUCCESS
+            elif pct >= 60:
+                bar_color = ACCENT
+            elif pct >= 40:
+                bar_color = WARN
+            else:
+                bar_color = ERROR
+
+            spacer = ctk.CTkFrame(bar_outer, fg_color="transparent", height=BAR_HEIGHT - fill_height)
+            spacer.pack(fill="x")
+            bar_fill = ctk.CTkFrame(bar_outer, fg_color=bar_color, corner_radius=4, height=fill_height)
+            bar_fill.pack(fill="x", expand=True)
+
+            # Date label below
+            date_short = entry.get("date", "")[-5:]  # "HH:MM" or "MM-DD"
+            ctk.CTkLabel(
+                col, text=date_short,
+                font=ctk.CTkFont(size=10),
+                text_color=TEXT_MUTED,
+            ).pack()
+
+        # ── Category breakdown ───────────────────────────────────────────
+        cat_card = Card(scroll)
+        cat_card.pack(fill="x", pady=10)
+        cat_inner = ctk.CTkFrame(cat_card, fg_color="transparent")
+        cat_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            cat_inner, text="📁  Leistung nach Kategorie",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 12))
+
+        # Aggregate per-question stats by category
+        cat_stats: dict[str, dict] = {}
+        for q in self.questions:
+            key = question_key(q)
+            info = pq.get(key, {})
+            seen = info.get("seen", 0)
+            correct = info.get("correct", 0)
+            if seen > 0:
+                cat = q.get("category", "Allgemein")
+                cat_stats.setdefault(cat, {"seen": 0, "correct": 0})
+                cat_stats[cat]["seen"] += seen
+                cat_stats[cat]["correct"] += correct
+
+        if cat_stats:
+            for cat_name, data in sorted(cat_stats.items()):
+                cat_pct = data["correct"] / data["seen"] * 100 if data["seen"] else 0
+                row = ctk.CTkFrame(cat_inner, fg_color="transparent")
+                row.pack(fill="x", pady=3)
+
+                ctk.CTkLabel(
+                    row, text=cat_name, width=120,
+                    font=ctk.CTkFont(size=13),
+                    text_color=TEXT_PRIMARY, anchor="w",
+                ).pack(side="left")
+
+                bar_bg = ctk.CTkFrame(row, fg_color=INPUT_BG, corner_radius=4, height=14)
+                bar_bg.pack(side="left", fill="x", expand=True, padx=(8, 8))
+                bar_bg.pack_propagate(False)
+
+                if cat_pct >= 80:
+                    bar_col = SUCCESS
+                elif cat_pct >= 60:
+                    bar_col = ACCENT
+                elif cat_pct >= 40:
+                    bar_col = WARN
+                else:
+                    bar_col = ERROR
+
+                if cat_pct > 0:
+                    bar_fill = ctk.CTkFrame(bar_bg, fg_color=bar_col, corner_radius=4)
+                    bar_fill.place(relx=0, rely=0, relwidth=cat_pct / 100, relheight=1.0)
+
+                ctk.CTkLabel(
+                    row, text=f"{cat_pct:.0f} %", width=50,
+                    font=ctk.CTkFont(size=13, weight="bold"),
+                    text_color=bar_col, anchor="e",
+                ).pack(side="right")
+        else:
+            ctk.CTkLabel(
+                cat_inner, text="Noch keine Daten verfügbar.",
+                font=ctk.CTkFont(size=13), text_color=TEXT_MUTED,
+            ).pack(anchor="w")
+
+        # ── Weak questions ───────────────────────────────────────────────
+        weak_qs = get_weak_questions(self.questions, self.stats)
+
+        weak_card = Card(scroll)
+        weak_card.pack(fill="x", pady=10)
+        weak_inner = ctk.CTkFrame(weak_card, fg_color="transparent")
+        weak_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            weak_inner, text="⚠️  Schwächen",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 4))
+        ctk.CTkLabel(
+            weak_inner, text="Fragen, die du am häufigsten falsch beantwortest.",
+            font=ctk.CTkFont(size=13),
+            text_color=TEXT_MUTED,
+        ).pack(anchor="w", pady=(0, 12))
+
+        if weak_qs:
+            for q in weak_qs[:8]:
+                key = question_key(q)
+                info = pq.get(key, {})
+                seen = info.get("seen", 0)
+                correct_count = info.get("correct", 0)
+                err_rate = (1 - correct_count / seen) * 100 if seen else 0
+
+                wq_row = ctk.CTkFrame(weak_inner, fg_color=INPUT_BG, corner_radius=10)
+                wq_row.pack(fill="x", pady=3)
+                wq_inner = ctk.CTkFrame(wq_row, fg_color="transparent")
+                wq_inner.pack(fill="x", padx=14, pady=8)
+
+                ctk.CTkLabel(
+                    wq_inner,
+                    text=q["question"][:70] + ("…" if len(q["question"]) > 70 else ""),
+                    font=ctk.CTkFont(size=13),
+                    text_color=TEXT_PRIMARY,
+                    anchor="w",
+                ).pack(side="left", fill="x", expand=True)
+
+                ctk.CTkLabel(
+                    wq_inner,
+                    text=f"{err_rate:.0f} % falsch  ({correct_count}/{seen})",
+                    font=ctk.CTkFont(size=12),
+                    text_color=ERROR,
+                ).pack(side="right")
+
+            # Schwächen üben button
+            AccentButton(
+                weak_inner, text="🎯  Schwächen üben", width=220,
+                command=self._start_weakness_quiz,
+            ).pack(pady=(14, 0))
+        else:
+            ctk.CTkLabel(
+                weak_inner,
+                text="🎉 Keine Schwächen erkannt! Alle Fragen wurden korrekt beantwortet.",
+                font=ctk.CTkFont(size=13),
+                text_color=SUCCESS,
+            ).pack(anchor="w")
+
+        # ── Recent history table ─────────────────────────────────────────
+        hist_card = Card(scroll)
+        hist_card.pack(fill="x", pady=10)
+        hist_inner = ctk.CTkFrame(hist_card, fg_color="transparent")
+        hist_inner.pack(fill="x", padx=24, pady=18)
+
+        ctk.CTkLabel(
+            hist_inner, text="🕒  Letzte Ergebnisse",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, 12))
+
+        # Table header
+        hdr = ctk.CTkFrame(hist_inner, fg_color="transparent")
+        hdr.pack(fill="x", pady=(0, 4))
+        for text, w in [("Datum", 140), ("Modus", 130), ("Ergebnis", 100), ("Quote", 80)]:
+            ctk.CTkLabel(
+                hdr, text=text, width=w,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color=TEXT_MUTED, anchor="w",
+            ).pack(side="left")
+
+        for entry in reversed(history[-15:]):
+            row = ctk.CTkFrame(hist_inner, fg_color="transparent")
+            row.pack(fill="x", pady=1)
+            ep = entry["score"] / entry["total"] * 100 if entry["total"] else 0
+            ep_color = SUCCESS if ep >= 60 else (WARN if ep >= 40 else ERROR)
+
+            ctk.CTkLabel(row, text=entry.get("date", "?"), width=140,
+                          font=ctk.CTkFont(size=13), text_color=TEXT_PRIMARY, anchor="w").pack(side="left")
+            ctk.CTkLabel(row, text=entry.get("mode", "?"), width=130,
+                          font=ctk.CTkFont(size=13), text_color=TEXT_SECONDARY, anchor="w").pack(side="left")
+            ctk.CTkLabel(row, text=f"{entry['score']}/{entry['total']}", width=100,
+                          font=ctk.CTkFont(size=13), text_color=TEXT_PRIMARY, anchor="w").pack(side="left")
+            ctk.CTkLabel(row, text=f"{ep:.0f} %", width=80,
+                          font=ctk.CTkFont(size=13, weight="bold"), text_color=ep_color, anchor="w").pack(side="left")
+
+        # ── Reset button ─────────────────────────────────────────────────
+        ctk.CTkButton(
+            scroll, text="🗑  Statistiken zurücksetzen",
+            fg_color="transparent", hover_color=ERROR,
+            text_color=TEXT_MUTED, font=ctk.CTkFont(size=12),
+            height=30, width=200,
+            command=self._reset_stats,
+        ).pack(pady=(16, 10))
+
+    def _start_weakness_quiz(self):
+        """Start a quiz with the user's weakest questions."""
+        weak = get_weak_questions(self.questions, self.stats)
+        if not weak:
+            self._show_message("Keine Schwächen", "Du hast alle Fragen richtig beantwortet!")
+            return
+        count = min(len(weak), 10)
+        self.quiz_pool = weak[:count]
+        random.shuffle(self.quiz_pool)
+        self.current_index = 0
+        self.score = 0
+        self.quiz_mode = MODE_STANDARD
+        self.exam_answers = [None] * len(self.quiz_pool)
+        self._show_question()
+
+    def _reset_stats(self):
+        """Clear all statistics after confirmation."""
+        self.stats = {"history": [], "per_question": {}}
+        save_stats(self.stats)
+        self._show_stats()
 
     # =====================================================================
     # PAGE: Add Question
