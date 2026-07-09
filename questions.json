@@ -3,138 +3,130 @@
     "question": "Wofür steht die Abkürzung 'CPU'?",
     "options": ["Central Processing Unit", "Computer Personal Unit", "Central Program Utility", "Core Processing Unit"],
     "correct": 0,
-    "category": "Hardware",
-    "difficulty": "Leicht",
-    "explanation": "CPU steht für 'Central Processing Unit' – die zentrale Verarbeitungseinheit, die alle Berechnungen und logischen Operationen im Computer ausführt."
+    "category": "Hardware"
   },
   {
     "question": "Welche Schicht des OSI-Modells ist für die Ende-zu-Ende-Kommunikation zuständig?",
     "options": ["Sicherungsschicht", "Vermittlungsschicht", "Transportschicht", "Anwendungsschicht"],
     "correct": 2,
-    "category": "Netzwerk",
-    "difficulty": "Schwer",
-    "explanation": "Die Transportschicht (Schicht 4) stellt die Ende-zu-Ende-Verbindung sicher und kümmert sich um Flusskontrolle und Fehlererkennung. Bekannte Protokolle: TCP und UDP."
+    "category": "Netzwerk"
   },
   {
     "question": "Was ist die Hauptaufgabe eines Betriebssystems?",
     "options": ["Textverarbeitung", "Verwaltung von Hardware- und Software-Ressourcen", "Internetzugang bereitstellen", "Datenbanken verwalten"],
     "correct": 1,
-    "category": "Software",
-    "difficulty": "Leicht",
-    "explanation": "Das Betriebssystem ist die Schnittstelle zwischen Hardware und Anwendungssoftware. Es verwaltet Prozesse, Speicher, Dateisysteme und Gerätetreiber."
+    "category": "Software"
   },
   {
     "question": "Welcher Speichertyp verliert seine Daten beim Ausschalten?",
     "options": ["SSD", "HDD", "RAM", "ROM"],
     "correct": 2,
-    "category": "Hardware",
-    "difficulty": "Leicht",
-    "explanation": "RAM (Random Access Memory) ist flüchtiger Speicher (volatile). Er dient als Arbeitsspeicher und verliert seinen Inhalt ohne Stromversorgung."
+    "category": "Hardware"
   },
   {
     "question": "Was bedeutet 'IP' in IP-Adresse?",
     "options": ["Internet Protocol", "Internal Process", "Information Platform", "Integrated Program"],
     "correct": 0,
-    "category": "Netzwerk",
-    "difficulty": "Leicht",
-    "explanation": "IP steht für 'Internet Protocol'. Es ist das grundlegende Protokoll für die Adressierung und das Routing von Datenpaketen im Internet."
+    "category": "Netzwerk"
   },
   {
     "question": "Welches Protokoll wird für den sicheren Datentransfer im Web verwendet?",
     "options": ["HTTP", "FTP", "HTTPS", "SMTP"],
     "correct": 2,
-    "category": "Netzwerk",
-    "difficulty": "Leicht",
-    "explanation": "HTTPS (HyperText Transfer Protocol Secure) verschlüsselt die Kommunikation zwischen Browser und Webserver mittels TLS/SSL."
+    "category": "Netzwerk"
   },
   {
     "question": "Was ist ein Firewall?",
     "options": ["Ein Antivirusprogramm", "Ein Sicherheitssystem zur Netzwerküberwachung", "Ein Betriebssystem", "Ein Speichermedium"],
     "correct": 1,
-    "category": "Sicherheit",
-    "difficulty": "Mittel",
-    "explanation": "Eine Firewall überwacht und kontrolliert den ein- und ausgehenden Netzwerkverkehr anhand vordefinierter Regeln. Sie ist kein Antivirenprogramm, sondern ein Netzwerk-Sicherheitssystem."
+    "category": "Sicherheit"
   },
   {
     "question": "Wie viele Bits hat ein Byte?",
     "options": ["4", "8", "16", "32"],
     "correct": 1,
-    "category": "Grundlagen",
-    "difficulty": "Leicht",
-    "explanation": "1 Byte = 8 Bit. Ein Bit ist die kleinste Informationseinheit (0 oder 1). Mit 8 Bit lassen sich 256 verschiedene Werte darstellen (2⁸)."
+    "category": "Grundlagen"
   },
   {
     "question": "Was ist die binäre Darstellung der Dezimalzahl 10?",
     "options": ["1010", "1100", "1001", "1110"],
     "correct": 0,
-    "category": "Grundlagen",
-    "difficulty": "Mittel",
-    "explanation": "10 dezimal = 1·8 + 0·4 + 1·2 + 0·1 = 1010 binär. Man teilt die Zahl wiederholt durch 2 und liest die Reste von unten nach oben."
+    "category": "Grundlagen"
   },
   {
     "question": "Welches Gerät verbindet zwei verschiedene Netzwerke miteinander?",
     "options": ["Switch", "Hub", "Router", "Repeater"],
     "correct": 2,
-    "category": "Netzwerk",
-    "difficulty": "Leicht",
-    "explanation": "Ein Router arbeitet auf Schicht 3 (Vermittlungsschicht) und leitet Pakete zwischen verschiedenen Netzwerken weiter, z. B. vom Heimnetz ins Internet."
+    "category": "Netzwerk"
   },
   {
     "question": "Was versteht man unter 'Phishing'?",
     "options": ["Eine Programmiersprache", "Das Abfangen von Daten durch gefälschte Webseiten/E-Mails", "Ein Netzwerkprotokoll", "Eine Backup-Methode"],
     "correct": 1,
-    "category": "Sicherheit",
-    "difficulty": "Mittel",
-    "explanation": "Phishing ist eine Social-Engineering-Methode, bei der Angreifer über gefälschte E-Mails oder Webseiten vertrauliche Daten wie Passwörter stehlen."
+    "category": "Sicherheit"
   },
   {
     "question": "Welche Einheit wird für die Taktfrequenz eines Prozessors verwendet?",
     "options": ["Watt", "Hertz (GHz)", "Byte", "Volt"],
     "correct": 1,
-    "category": "Hardware",
-    "difficulty": "Mittel",
-    "explanation": "Die Taktfrequenz wird in Hertz gemessen. Moderne CPUs arbeiten im GHz-Bereich (Milliarden Takte pro Sekunde)."
+    "category": "Hardware"
   },
   {
     "question": "Was ist RAID?",
     "options": ["Ein Antivirenprogramm", "Eine Methode zur redundanten Datenspeicherung", "Ein Netzwerkprotokoll", "Eine Programmiersprache"],
     "correct": 1,
-    "category": "Hardware",
-    "difficulty": "Schwer",
-    "explanation": "RAID (Redundant Array of Independent Disks) kombiniert mehrere Festplatten, um Datensicherheit (Redundanz) und/oder Geschwindigkeit zu erhöhen. Bekannte Level: RAID 0, 1, 5, 10."
+    "category": "Hardware"
   },
   {
     "question": "Welches Netzwerkgerät arbeitet auf Schicht 2 des OSI-Modells?",
     "options": ["Router", "Switch", "Gateway", "Firewall"],
     "correct": 1,
-    "category": "Netzwerk",
-    "difficulty": "Schwer",
-    "explanation": "Ein Switch arbeitet auf der Sicherungsschicht (Schicht 2) und leitet Frames anhand von MAC-Adressen weiter. Ein Router dagegen arbeitet auf Schicht 3."
+    "category": "Netzwerk"
   },
   {
     "question": "Was ist der Unterschied zwischen TCP und UDP?",
     "options": ["TCP ist schneller als UDP", "TCP ist verbindungsorientiert, UDP ist verbindungslos", "UDP ist sicherer als TCP", "Es gibt keinen Unterschied"],
     "correct": 1,
-    "category": "Netzwerk",
-    "difficulty": "Mittel",
-    "explanation": "TCP baut eine Verbindung auf (3-Way-Handshake) und garantiert die Zustellung. UDP ist verbindungslos und schneller, aber ohne Zustellgarantie – ideal für Streaming oder DNS."
+    "category": "Netzwerk"
   },
   {
-    "question": "Wofür steht die Abkürzung SDRAM?",
-    "options": ["Super Dynamic Random Access Memory", "Synchronous Dynamic Random Access Memory", "Small Diameter Random Access Memory", "Small Data Random Access Memory"],
-    "correct": 1,
-    "category": "Hardware"
-  },
-   {
-    "question": "Welche Prozessorarchitektur wird am häufigsten in mobilen Geräten verwendet?",
-    "options": ["ARM64", "generic 64-Bit", "x86", "AMR64"],
+    "question": "Welche Aufgabe hat ein Betriebssystem?",
+    "options": ["Es verwaltet Hardware und Software", "Es ersetzt den Arbeitsspeicher", "Es ist nur für das Internet zuständig", "Es löscht automatisch alle Dateien"],
     "correct": 0,
-    "category": "Hardware"
+    "category": "Betriebssysteme"
   },
   {
-    "question": "Wofür steht die Abkürzung GPU?",
-    "options": ["Central Processing Unit", "Good Processing Unit", "Graph Processing Unit", "Graphics Processing Unit"],
-    "correct": 3,
-    "category": "Hardware"
+    "question": "Welches der folgenden Beispiele ist ein Betriebssystem?",
+    "options": ["Google Chrome", "Microsoft Word", "Windows 11", "Python"],
+    "correct": 2,
+    "category": "Betriebssysteme"
+  },
+  {
+    "question": "Was macht ein Betriebssystem beim Starten des Computers?",
+    "options": ["Es lädt wichtige Systemdateien und bereitet den Computer zur Nutzung vor", "Es erstellt automatisch ein neues Passwort", "Es löscht den Prozessor", "Es trennt die Internetverbindung dauerhaft"],
+    "correct": 0,
+    "category": "Betriebssysteme"
+  },
+  {
+    "question": "Was ist ein Commit in Git?",
+    "options": ["Ein Online-Speicherplatz bei GitHub", "Ein gespeicherter Stand von Änderungen im Repository", "Ein Befehl zum Löschen eines Projekts", "Eine Programmiersprache"],
+    "correct": 1,
+    "category": "Git/GitHub",
+    "explanation": "Ein Commit ist ein gespeicherter Stand deiner Änderungen. Er liegt zuerst lokal im Git-Repository und kann später mit push zu GitHub hochgeladen werden."
+},
+  {
+    "question": "Was bewirkt der Befehl 'git push'?",
+    "options": ["Er lädt Änderungen vom GitHub-Repository auf den eigenen PC herunter", "Er speichert Änderungen nur lokal im Repository", "Er lädt lokale Commits zu einem Remote-Repository wie GitHub hoch", "Er erstellt automatisch eine neue Python-Datei"],
+    "correct": 2,
+    "category": "Git/GitHub",
+    "explanation": "Mit git push werden deine lokalen Commits zu einem Remote-Repository hochgeladen, zum Beispiel zu GitHub. Danach können andere deine Änderungen online sehen."
+  },
+  {
+    "question": "Warum sollte man vor der Arbeit an einem gemeinsamen GitHub-Projekt zuerst 'git pull' ausführen?",
+    "options": ["Damit man die neuesten Änderungen aus dem Remote-Repository erhält", "Damit alle lokalen Dateien gelöscht werden", "Damit GitHub automatisch einen Commit erstellt", "Damit das Projekt ohne Internet funktioniert"],
+    "correct": 0,
+    "category": "Git/GitHub",
+    "explanation": "Mit git pull holst du die neuesten Änderungen aus dem Remote-Repository auf deinen PC. Das ist wichtig, damit du nicht auf einem veralteten Stand weiterarbeitest."
   }
+
 ]
