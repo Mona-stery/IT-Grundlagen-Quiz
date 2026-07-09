@@ -127,6 +127,40 @@
     "correct": 0,
     "category": "Git/GitHub",
     "explanation": "Mit git pull holst du die neuesten Änderungen aus dem Remote-Repository auf deinen PC. Das ist wichtig, damit du nicht auf einem veralteten Stand weiterarbeitest."
-  }
+  },
+  {
+    "question": "Was ist Ransomware?",
+    "options": ["Ein Programm zur Systemoptimierung", "Schadsoftware, die Daten verschlüsselt und Lösegeld fordert", "Ein sicheres Netzwerkprotokoll", "Ein Backup-Tool"],
+    "correct": 1,
+    "category": "Sicherheit",
+    "explanation": "Ransomware ist Erpressungstrojaner-Software, die den Zugriff auf Daten oder das gesamte System sperrt und diese oft verschlüsselt. Für die Freigabe wird dann ein Lösegeld (Ransom) gefordert."
+  },
+  {
+    "question": "Was ist das Hauptziel einer DDoS-Attacke (Distributed Denial of Service)?",
+    "options": ["Passwörter stehlen", "Einen Server oder Dienst durch massenhafte Anfragen überlasten", "Daten aus einer Datenbank kopieren", "Netzwerkverkehr verschlüsseln"],
+    "correct": 1,
+    "category": "Sicherheit",
+    "explanation": "Bei einer DDoS-Attacke wird ein Zielsystem von sehr vielen verschiedenen Geräten gleichzeitig mit Anfragen überflutet. Das System bricht unter der Last zusammen und ist für legitime Nutzer nicht mehr erreichbar."
+  },
+  {
+    "question": "Wofür steht die Abkürzung 'MFA' in der IT-Sicherheit?",
+    "options": ["Multi-Faktor-Authentifizierung", "Multiple Firewall Architecture", "Malware Filtering Algorithm", "Mainframe Access"],
+    "correct": 0,
+    "category": "Sicherheit",
+    "explanation": "Multi-Faktor-Authentifizierung (MFA) erhöht die Sicherheit beim Login, da Nutzer nicht nur ein Passwort (Wissen) eingeben müssen, sondern zusätzlich z. B. einen Code auf dem Smartphone (Besitz) bestätigen müssen."
+  },
+  {
+    "question": "Welches Prinzip besagt, dass Benutzer nur die Rechte erhalten sollen, die sie für ihre Arbeit zwingend benötigen?",
+    "options": ["Zero-Day-Prinzip", "Principle of Least Privilege", "Need-to-know-Prinzip", "Single Sign-On"],
+    "correct": 1,
+    "category": "Sicherheit",
+    "explanation": "Das Prinzip der geringsten Rechte (Principle of Least Privilege) stellt sicher, dass Nutzer oder Programme nur die minimalen Zugriffsrechte haben, die für ihre Aufgabe notwendig sind. Das minimiert Schäden bei einem Sicherheitsvorfall."
+  },
+  {
+    "question": "Was ist der Hauptunterschied zwischen symmetrischer und asymmetrischer Verschlüsselung?",
+    "options": ["Asymmetrische Verschlüsselung ist immer schneller", "Symmetrische nutzt zwei Schlüssel, asymmetrische nur einen", "Symmetrische nutzt denselben Schlüssel zum Ver- und Entschlüsseln, asymmetrische ein Schlüsselpaar (öffentlich/privat)", "Symmetrische Verschlüsselung wird nur für WLAN genutzt"],
+    "correct": 2,
+    "category": "Sicherheit",
+    "explanation": "Bei der symmetrischen Verschlüsselung wird derselbe Schlüssel zum Ver- und Entschlüsseln genutzt. Die asymmetrische Verschlüsselung nutzt ein Paar aus einem öffentlichen Schlüssel (zum Verschlüsseln) und einem privaten Schlüssel (zum Entschlüsseln).",
 
 ]
