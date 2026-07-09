@@ -88,5 +88,11 @@
     "options": ["TCP ist schneller als UDP", "TCP ist verbindungsorientiert, UDP ist verbindungslos", "UDP ist sicherer als TCP", "Es gibt keinen Unterschied"],
     "correct": 1,
     "category": "Netzwerk"
+  },
+  {
+    "question": "Wofür steht die Abkürzung GPU?",
+    "options": ["Central Processing Unit", "Good Processing Unit", "Graph Processing Unit", "Graphics Processing Unit"],
+    "correct": 3,
+    "category": "Hardware"
   }
 ]
