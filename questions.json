@@ -91,34 +91,19 @@
   },
   {
     "question": "Welche Aufgabe hat ein Betriebssystem?",
-    "options": [
-      "Es verwaltet Hardware und Software",
-      "Es ersetzt den Arbeitsspeicher",
-      "Es ist nur für das Internet zuständig",
-      "Es löscht automatisch alle Dateien"
-    ],
+    "options": ["Es verwaltet Hardware und Software", "Es ersetzt den Arbeitsspeicher", "Es ist nur für das Internet zuständig", "Es löscht automatisch alle Dateien"],
     "correct": 0,
     "category": "Betriebssysteme"
   },
   {
     "question": "Welches der folgenden Beispiele ist ein Betriebssystem?",
-    "options": [
-      "Google Chrome",
-      "Microsoft Word",
-      "Windows 11",
-      "Python"
-    ],
+    "options": ["Google Chrome", "Microsoft Word", "Windows 11", "Python"],
     "correct": 2,
     "category": "Betriebssysteme"
   },
   {
     "question": "Was macht ein Betriebssystem beim Starten des Computers?",
-    "options": [
-      "Es lädt wichtige Systemdateien und bereitet den Computer zur Nutzung vor",
-      "Es erstellt automatisch ein neues Passwort",
-      "Es löscht den Prozessor",
-      "Es trennt die Internetverbindung dauerhaft"
-    ],
+    "options": ["Es lädt wichtige Systemdateien und bereitet den Computer zur Nutzung vor", "Es erstellt automatisch ein neues Passwort", "Es löscht den Prozessor", "Es trennt die Internetverbindung dauerhaft"],
     "correct": 0,
     "category": "Betriebssysteme"
   },
