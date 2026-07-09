@@ -120,6 +120,28 @@
       "Es trennt die Internetverbindung dauerhaft"
     ],
     "correct": 0,
-    "category": "Betriebssysteme"
+    "category": "Hardware"
+  },
+  {
+    "question": "Was ist ein Commit in Git?",
+    "options": ["Ein Online-Speicherplatz bei GitHub", "Ein gespeicherter Stand von Änderungen im Repository", "Ein Befehl zum Löschen eines Projekts", "Eine Programmiersprache"],
+    "correct": 1,
+    "category": "Git/GitHub",
+    "explanation": "Ein Commit ist ein gespeicherter Stand deiner Änderungen. Er liegt zuerst lokal im Git-Repository und kann später mit push zu GitHub hochgeladen werden."
+},
+  {
+    "question": "Was bewirkt der Befehl 'git push'?",
+    "options": ["Er lädt Änderungen vom GitHub-Repository auf den eigenen PC herunter", "Er speichert Änderungen nur lokal im Repository", "Er lädt lokale Commits zu einem Remote-Repository wie GitHub hoch", "Er erstellt automatisch eine neue Python-Datei"],
+    "correct": 2,
+    "category": "Git/GitHub",
+    "explanation": "Mit git push werden deine lokalen Commits zu einem Remote-Repository hochgeladen, zum Beispiel zu GitHub. Danach können andere deine Änderungen online sehen."
+  },
+  {
+    "question": "Warum sollte man vor der Arbeit an einem gemeinsamen GitHub-Projekt zuerst 'git pull' ausführen?",
+    "options": ["Damit man die neuesten Änderungen aus dem Remote-Repository erhält", "Damit alle lokalen Dateien gelöscht werden", "Damit GitHub automatisch einen Commit erstellt", "Damit das Projekt ohne Internet funktioniert"],
+    "correct": 0,
+    "category": "Git/GitHub",
+    "explanation": "Mit git pull holst du die neuesten Änderungen aus dem Remote-Repository auf deinen PC. Das ist wichtig, damit du nicht auf einem veralteten Stand weiterarbeitest."
   }
+
 ]
