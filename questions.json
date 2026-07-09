@@ -158,9 +158,14 @@
   },
   {
     "question": "Was ist der Hauptunterschied zwischen symmetrischer und asymmetrischer Verschlüsselung?",
-    "options": ["Asymmetrische Verschlüsselung ist immer schneller", "Symmetrische nutzt zwei Schlüssel, asymmetrische nur einen", "Symmetrische nutzt denselben Schlüssel zum Ver- und Entschlüsseln, asymmetrische ein Schlüsselpaar (öffentlich/privat)", "Symmetrische Verschlüsselung wird nur für WLAN genutzt"],
+    "options": [
+      "Asymmetrische Verschlüsselung ist immer schneller",
+      "Symmetrische nutzt zwei Schlüssel, asymmetrische nur einen",
+      "Symmetrische nutzt denselben Schlüssel zum Ver- und Entschlüsseln, asymmetrische ein Schlüsselpaar (öffentlich/privat)",
+      "Symmetrische Verschlüsselung wird nur für WLAN genutzt"
+    ],
     "correct": 2,
     "category": "Sicherheit",
-    "explanation": "Bei der symmetrischen Verschlüsselung wird derselbe Schlüssel zum Ver- und Entschlüsseln genutzt. Die asymmetrische Verschlüsselung nutzt ein Paar aus einem öffentlichen Schlüssel (zum Verschlüsseln) und einem privaten Schlüssel (zum Entschlüsseln).",
-
+    "explanation": "Bei der symmetrischen Verschlüsselung wird derselbe Schlüssel zum Ver- und Entschlüsseln genutzt. Die asymmetrische Verschlüsselung nutzt ein Paar aus einem öffentlichen Schlüssel (zum Verschlüsseln) und einem privaten Schlüssel (zum Entschlüsseln)."
+  }
 ]
